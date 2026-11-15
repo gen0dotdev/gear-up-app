@@ -7,3 +7,5 @@ dist/
 .dev.vars
 .env
 .DS_Store
+# ไฟล์บัญชีที่ส่งออกจาก D1 (มีรหัสผ่านที่ Hash แล้ว)
+staff.sql

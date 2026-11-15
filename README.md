@@ -103,6 +103,31 @@ npx wrangler secret put BETTER_AUTH_SECRET
 เกิน 10 ms ของแผนฟรี (รายละเอียดใน [docs/auth.md](docs/auth.md)) D1 และ R2 ใช้แผนฟรีได้
 ขั้นตอน Deploy (สร้าง D1 / R2 จริง, `wrangler secret put`, `wrangler deploy`) อยู่ในบทเรียน deploy
 
+### บัญชีพนักงานบน Cloudflare
+
+`npm run staff:local` สร้างบัญชีใน D1 บนเครื่องเท่านั้น และรหัส `gearup-phum-dev` / `gearup-kwan-dev` อยู่บน GitHub ใครก็เห็น
+ห้ามส่งบัญชีที่ยังใช้รหัสนี้ขึ้นไป ให้เปลี่ยนรหัสบนเครื่องก่อน แล้วค่อยส่งเฉพาะตารางบัญชีขึ้น D1 บน Cloudflare
+
+1. `npm run dev` แล้วล็อกอินเป็นคุณภูมิที่ `http://localhost:4400/login`
+2. เปิด Console ของ DevTools (`Cmd + Option + J` บน Mac หรือ `Ctrl + Shift + J` บน Windows) แล้ววางบรรทัดนี้
+   โดยเปลี่ยน `รหัสใหม่ของคุณภูมิ` เป็นรหัสยาวที่จดไว้ในที่ปลอดภัย
+
+   ```js
+   await fetch("/api/auth/change-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentPassword: "gearup-phum-dev", newPassword: "รหัสใหม่ของคุณภูมิ", revokeOtherSessions: true }) }).then((r) => r.status)
+   ```
+
+3. ได้ `200` แล้วออกจากระบบ ล็อกอินเป็นคุณขวัญ ทำซ้ำด้วย `gearup-kwan-dev`
+4. ส่งออกตารางบัญชีจาก D1 บนเครื่อง แล้วส่งเข้า D1 บน Cloudflare
+
+   ```bash
+   npx wrangler d1 export DB --local --table user --table account --no-schema --output staff.sql
+   npx wrangler d1 execute DB --remote --file staff.sql
+   ```
+
+5. ลบ `staff.sql` ทันที (ไฟล์นี้มีรหัสผ่านที่ Hash แล้ว): Mac `rm staff.sql` · Windows `del staff.sql`
+
+ขั้นตอนนี้ทดสอบกับ D1 บนเครื่องแล้ว ส่วนคำสั่ง `--remote` ยังไม่ได้รันกับบัญชี Cloudflare จริง
+
 ## เอกสาร
 
 - [docs/architecture.md](docs/architecture.md) สามชั้น, ชั้นในเซิร์ฟเวอร์ และเส้นทางของการจองหนึ่งครั้ง
