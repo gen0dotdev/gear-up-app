@@ -40,7 +40,8 @@ export const mechanics = sqliteTable("mechanics", {
 export const customers = sqliteTable("customers", {
   id: text().primaryKey(), // C01, C18, ...: สร้างใน db/queries/customers.ts (ไม่มี Sequence)
   name: text().notNull(),
-  phone: text().notNull(),
+  // หนึ่งเบอร์ = ลูกค้าหนึ่งคน ฐานข้อมูลกันเบอร์ซ้ำเอง (ชื่อเดียวกับ gear-up-api)
+  phone: text().notNull().unique("customers_phone_unique"),
 })
 
 export const cars = sqliteTable(

@@ -10,7 +10,7 @@
 | `d1.ts` | `createDb(env.DB)` ด้วย `drizzle-orm/d1` สร้างใหม่ทุกคำขอ | แทน `neon.ts`, `pglite.ts`, `open.ts` |
 | `errors.ts` | `isUniqueViolation`: อ่านข้อความ `UNIQUE constraint failed: ...` ของ SQLite | **เขียนใหม่** (เดิมรหัส `23505` ของ Postgres) |
 | `queries/booking-writes.ts` | `insertBookingIfRoom`, `moveBookingIfRoom`: กัน "เกิน 4 คัน" ด้วย SQL คำสั่งเดียว | **เขียนใหม่** (เดิม Transaction + `FOR UPDATE`) |
-| `queries/customers.ts` | ลูกค้าและรถของการจองแบบ Guest | แก้: id ใหม่ด้วย `MAX + 1` และ "เพิ่มถ้ายังไม่มี" ในคำสั่งเดียว |
+| `queries/customers.ts` | ลูกค้าและรถของการจองแบบ Guest | แก้: id ใหม่ด้วย `MAX + 1` ใน INSERT เดียวกับ `ON CONFLICT (phone) DO NOTHING` |
 | `queries/slots.ts` | `slotsOn`, `findSlot` | แก้: ตัด `lockSlot`, `lockSlotById` (D1 ไม่มีการล็อกแถว) |
 | `queries/bookings.ts` | อ่านการจอง (Join 5 ตาราง) | **ไม่แก้** ไฟล์เดียวกับ gear-up-api |
 | `queries/services.ts` | ตาราง services | **ไม่แก้** |
@@ -48,5 +48,7 @@ RETURNING id
 
 - `migrations/0000_auth.sql` ตารางของ Better Auth (`npm run auth:migration`, ลงทะเบียนเป็น Custom Migration ของ drizzle-kit)
 - `migrations/0001_shop.sql` ตารางของร้าน (`drizzle-kit generate` จาก `schema.ts`)
+- `migrations/0002_one_customer_per_phone.sql` Unique Index `customers_phone_unique`: หนึ่งเบอร์ = ลูกค้าหนึ่งคน
+  (`drizzle-kit generate --name one_customer_per_phone`)
 - `seed/0001_sample.sql` สร้างจาก `dataset.py` ของ gen0 ด้วย `tools/seed_from_dataset.py` (ห้ามแก้มือ)
   รหัสจองชุดเดียวกับ gear-up-api (B201 = GU-7K2P)

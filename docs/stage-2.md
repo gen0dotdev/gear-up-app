@@ -32,5 +32,7 @@ diff -r gear-up-api/src/rules    gear-up-app/src/rules      # ไม่มีผ
 - **รถใหม่คันเดียวกันจองพร้อมกันสองคำขอ** (เช่น กดปุ่มจองสองครั้ง): ทั้งสองคำขออ่านว่า "ยังไม่มีรถคันนี้"
   แล้วต่างคนต่างเพิ่ม คำขอที่สองชน Primary Key ของ `cars` → 500 แทนที่จะได้ "รถคันนี้จองรอบนี้ไว้แล้ว"
   Test ใน workerd จับได้ แก้ใน `db/queries/customers.ts` ของ D1 ให้ "เพิ่มถ้ายังไม่มี" ในคำสั่งเดียว
-  (`HAVING NOT EXISTS`, `onConflictDoNothing`) **gear-up-api มีจุดเดียวกัน** (`ensureCustomerCar` อยู่นอก Transaction แล้ว)
+  (`ON CONFLICT DO NOTHING`) **gear-up-api มีจุดเดียวกัน** (`ensureCustomerCar` อยู่นอก Transaction แล้ว)
+- **เบอร์เดียวกันจองพร้อมกัน** ต้องได้ลูกค้าคนเดียว ตอนนี้ฐานข้อมูลกันเอง: `customers.phone` เป็น Unique
+  (`customers_phone_unique`, Migration `0002_one_customer_per_phone.sql`) ลูกค้าจึงใช้ `ON CONFLICT (phone) DO NOTHING` เหมือนรถ
 - ลองถอดเงื่อนไข `WHERE (นับ) < bays` ออกชั่วคราว: Test เรื่องรอบเต็มและการแย่งช่องพัง 4 ข้อ แปลว่าเงื่อนไขนี้คือตัวกันจริง

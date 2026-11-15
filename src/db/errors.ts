@@ -7,6 +7,7 @@ import { DrizzleQueryError } from "drizzle-orm"
 // ชื่อ Index (ชื่อเดียวกับ Postgres) → คอลัมน์ที่ SQLite จะบอกในข้อความ
 const COLUMNS: Record<string, string> = {
   one_car_per_slot: "bookings.slot_id, bookings.plate",
+  customers_phone_unique: "customers.phone",
 }
 
 function messagesOf(error: unknown): string {

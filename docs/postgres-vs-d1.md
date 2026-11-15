@@ -15,6 +15,7 @@
 | CHECK, UNIQUE, Foreign Key | มี | มี (D1 เปิด Foreign Key ไว้) | เขียนเหมือนเดิม |
 | รถซ้ำในรอบ | Partial Unique Index `WHERE status <> 'cancelled'` | เหมือนกันทุกตัวอักษร | SQLite รองรับ Partial Index |
 | ชน Unique | รหัส `23505` + ชื่อ Constraint | ข้อความ `UNIQUE constraint failed: bookings.slot_id, bookings.plate` | SQLite ไม่มีรหัสแยกชนิด จึงอ่านจากข้อความ (`db/errors.ts`) |
+| หนึ่งเบอร์ = ลูกค้าหนึ่งคน | Unique `customers_phone_unique` + `.onConflictDoNothing({ target: customers.phone })` | Unique Index ชื่อเดียวกัน + `INSERT ... SELECT ... WHERE true ON CONFLICT (phone) DO NOTHING` | `INSERT ... SELECT` ของ SQLite ต้องมี `WHERE` ก่อน `ON CONFLICT` ไม่อย่างนั้น SQLite อ่าน `ON` เป็นส่วนของ JOIN |
 | ไม่เกิน 4 คัน | Transaction + `SELECT ... FOR UPDATE` (คำขอที่สองรอ) | `INSERT ... SELECT ... WHERE (นับ) < bays` คำสั่งเดียว | D1 ไม่มี Transaction แบบเปิดค้างข้าม `await` และไม่มีการล็อกแถว |
 | หลายคำสั่งพร้อมกัน | `db.transaction(async (tx) => ...)` | `db.batch([...])` ส่งเป็นชุด ทำทั้งชุดหรือไม่ทำเลย | Batch ส่งคำสั่งที่รู้ล่วงหน้า อ่านผลระหว่างทางไม่ได้ |
 | Migration | `drizzle-kit migrate` | `drizzle-kit generate` แล้ว `wrangler d1 migrations apply` | Wrangler รู้จัก D1 ทั้งในเครื่องและบน Cloudflare |

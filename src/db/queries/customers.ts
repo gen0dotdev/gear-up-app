@@ -1,12 +1,12 @@
 // ลูกค้าและรถ: การจองแบบ Guest ต้องมีแถวใน customers และ cars ก่อน (Foreign Key)
-// ต่างจาก gear-up-api สองเรื่อง:
-// 1. id ลูกค้าใหม่ (C18, C19, ...)
-//    Postgres: DEFAULT 'C' || nextval('customer_no')
-//    D1:       ไม่มี Sequence จึงคำนวณ MAX + 1 ในคำสั่ง INSERT เดียวกัน
-//              คำสั่งเดียวใน D1 ทำจนจบก่อนคำสั่งอื่นเริ่ม สองคำขอพร้อมกันจึงไม่ได้เลขซ้ำ
-// 2. รถใหม่คันเดียวกันจองพร้อมกันสองคำขอ (เช่น ลูกค้ากดปุ่มจองสองครั้ง)
-//    ทั้งสองคำขออ่านแล้ว "ยังไม่มีรถคันนี้" แล้วต่างคนต่างเพิ่ม คำขอที่สองชน Primary Key → 500
-//    จึงเขียนแบบ "เพิ่มถ้ายังไม่มี" ในคำสั่งเดียว (Test: tests/services.test.ts รถคันเดียวกันแย่งรอบเดียว)
+// ต่างจาก gear-up-api เรื่องเดียว: id ลูกค้าใหม่ (C18, C19, ...)
+//   Postgres: DEFAULT 'C' || nextval('customer_no')
+//   D1:       ไม่มี Sequence จึงคำนวณ MAX + 1 ในคำสั่ง INSERT เดียวกัน
+//             คำสั่งเดียวใน D1 ทำจนจบก่อนคำสั่งอื่นเริ่ม สองคำขอพร้อมกันจึงไม่ได้เลขซ้ำ
+// ที่เหมือนกัน: คำขอพร้อมกันสองคำขอ (เช่น ลูกค้ากดปุ่มจองสองครั้ง) อ่านแล้ว "ยังไม่มี" ทั้งคู่ แล้วต่างคนต่างเพิ่ม
+//   ฐานข้อมูลกันข้อมูลซ้ำให้แล้ว (cars.plate เป็น Primary Key, customers.phone เป็น Unique)
+//   จึงเขียน INSERT ... ON CONFLICT DO NOTHING ทั้งสองตาราง ใครเพิ่มก่อนก็ได้ อีกคำขอใช้แถวนั้น ไม่มี 500
+//   (Test: tests/booking-writes.test.ts และ tests/services.test.ts)
 import { eq, sql } from "drizzle-orm"
 import type { Db } from "../index.ts"
 import { cars, customers } from "../schema.ts"
@@ -20,16 +20,19 @@ export type GuestCar = {
   carSize: CarSize
 }
 
-// หาลูกค้าจากเบอร์โทร ไม่เจอก็สร้างใหม่
+// หาลูกค้าจากเบอร์โทร ไม่เจอก็สร้างใหม่ เบอร์เดียวกันไม่มีวันได้สองคน
 async function customerIdFor(tx: Db, input: GuestCar): Promise<string> {
   const [found] = await tx.select().from(customers).where(eq(customers.phone, input.phone))
   if (found) return found.id
-  // HAVING NOT EXISTS: ถ้าระหว่างนี้มีคำขออื่นเพิ่มเบอร์นี้ไปแล้ว คำสั่งนี้ไม่เพิ่มซ้ำ
+  // ON CONFLICT (phone) DO NOTHING: อีกคำขอเพิ่มเบอร์นี้ไปก่อนแล้วก็ไม่เป็นไร ใช้ลูกค้าคนนั้น
+  // WHERE true: SQLite ต้องมี WHERE ก่อน ON CONFLICT ใน INSERT ... SELECT
+  //   ไม่อย่างนั้นจะอ่าน ON ว่าเป็นส่วนของ JOIN ใน FROM
   await tx.run(sql`
     INSERT INTO customers (id, name, phone)
     SELECT 'C' || (COALESCE(MAX(CAST(substr(id, 2) AS INTEGER)), 0) + 1), ${input.customer}, ${input.phone}
     FROM customers
-    HAVING NOT EXISTS (SELECT 1 FROM customers WHERE phone = ${input.phone})`)
+    WHERE true
+    ON CONFLICT (phone) DO NOTHING`)
   const [customer] = await tx.select().from(customers).where(eq(customers.phone, input.phone))
   if (!customer) throw new Error("สร้างลูกค้าไม่สำเร็จ")
   return customer.id
