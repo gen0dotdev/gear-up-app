@@ -57,7 +57,7 @@ D1 และ R2 จำลองอยู่ในโฟลเดอร์ `.wran
 | `npm run db:seed:local` | ใส่ข้อมูลตัวอย่าง 16-17 พ.ย. ใหม่ (ลบการจองที่ลองไว้ทิ้ง รันซ้ำได้) |
 | `npm run staff:local` | สร้างบัญชีคุณภูมิและคุณขวัญใน D1 ในเครื่อง |
 | `npm run setup:local` | สามคำสั่งบนรวมกัน |
-| `npm run auth:migration` | สร้าง `migrations/0001_auth.sql` ใหม่จากค่าตั้งของ Better Auth (ใช้เมื่อเปลี่ยน Plugin) |
+| `npm run auth:migration` | สร้าง `migrations/0000_auth.sql` ใหม่จากค่าตั้งของ Better Auth (ใช้เมื่อเปลี่ยน Plugin) |
 
 ## แผนที่ของโค้ด: ชั้นไหนอยู่โฟลเดอร์ไหน
 

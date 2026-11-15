@@ -47,7 +47,7 @@ curl -X POST http://localhost:4400/_actions/board.list -H 'Content-Type: applica
 - `src/pages/api/auth/[...all].ts` ส่งทุก URL ใต้ `/api/auth/` ให้ Better Auth (`auth.handler(request)`)
 - `emailAndPassword.disableSignUp: true`: `POST /api/auth/sign-up/email` ได้ 400 เสมอ
   บัญชีสร้างด้วย `npm run staff:local` (เรียก `auth.api.createUser` ของ Admin Plugin ฝั่งเซิร์ฟเวอร์)
-- ตารางของ Better Auth: `migrations/0001_auth.sql` สร้างด้วย `npm run auth:migration` จากค่าตั้งชุดเดียวกับแอป
+- ตารางของ Better Auth: `migrations/0000_auth.sql` สร้างด้วย `npm run auth:migration` จากค่าตั้งชุดเดียวกับแอป
 
 ## เวลาตรวจรหัสผ่าน (คำถามเรื่อง Workers Paid)
 
