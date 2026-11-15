@@ -1,0 +1,48 @@
+---
+// โครงหน้าหลังร้าน: แถบบนบอกว่าใครล็อกอินอยู่ เมนู และปุ่มออกจากระบบ
+// หน้าที่ใช้ Layout นี้ middleware.ts เช็กสิทธิ์ให้ก่อนแล้ว จึงมี user แน่นอน
+import "../styles/global.css"
+import { ADMIN, can } from "../auth/access.ts"
+
+type Props = { title: string }
+const { title } = Astro.props
+const user = Astro.locals.user
+const isAdmin = can(user?.role, ADMIN)
+const here = Astro.url.pathname
+const link = (path: string) => (here === path ? "font-semibold underline" : "opacity-80")
+---
+
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} | Gear Up หลังร้าน</title>
+  </head>
+  <body class="min-h-screen bg-background text-foreground">
+    <header class="bg-brand px-4 py-3 text-white">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
+        <nav class="flex flex-wrap items-center gap-4">
+          <span class="font-bold text-orange-300">Gear Up หลังร้าน</span>
+          <a href="/admin" class={link("/admin")}>กระดานงาน</a>
+          {isAdmin && <a href="/admin/services" class={link("/admin/services")}>บริการและราคา</a>}
+          <a href="/" class="opacity-80">หน้าร้าน</a>
+        </nav>
+        <div class="flex items-center gap-3 text-sm">
+          <span data-testid="who">{user?.name} ({user?.role})</span>
+          <button id="sign-out" type="button" class="rounded-md border border-white/40 px-2 py-1">ออกจากระบบ</button>
+        </div>
+      </div>
+    </header>
+    <slot />
+
+    <script>
+      import { authClient } from "../auth/client.ts"
+
+      document.querySelector("#sign-out")?.addEventListener("click", async () => {
+        await authClient.signOut()
+        location.href = "/login"
+      })
+    </script>
+  </body>
+</html>

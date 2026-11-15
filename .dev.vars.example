@@ -1,0 +1,14 @@
+# ค่าลับสำหรับรันในเครื่อง: คัดลอกเป็น .dev.vars (ไฟล์นั้นอยู่ใน .gitignore ห้ามขึ้น GitHub)
+#   cp .dev.vars.example .dev.vars
+# บนเซิร์ฟเวอร์จริงตั้งด้วย: npx wrangler secret put BETTER_AUTH_SECRET
+
+# ใช้เซ็น Cookie ของ Session ใครรู้ค่านี้ปลอม Session ได้ สร้างใหม่ด้วย: openssl rand -base64 32
+BETTER_AUTH_SECRET=dev-only-secret-change-me-dev-only-secret
+
+# URL ของแอป ในเครื่องไม่ต้องตั้ง: แอปใช้ Origin ของคำขอ (dev พอร์ต 4400, preview พอร์ต 4401 ใช้ได้ทั้งคู่)
+# บนเซิร์ฟเวอร์จริงให้ตั้ง เช่น BETTER_AUTH_URL=https://gearup.example
+# BETTER_AUTH_URL=http://localhost:4400
+
+# ข้อมูลตัวอย่างเป็นวันที่ 16-17 พ.ย. 2026 ตั้ง NOW ให้แอปคิดว่าตอนนี้เป็นเย็นวันจันทร์ 16 พ.ย.
+# หน้าร้านจึงแสดงรอบของวันอังคาร 17 พ.ย. (พรุ่งนี้) ตรงกับ data sheet ลบบรรทัดนี้ = ใช้เวลาจริง
+NOW=2026-11-16T18:00:00+07:00

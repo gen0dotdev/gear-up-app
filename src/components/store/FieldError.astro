@@ -1,0 +1,7 @@
+---
+// ข้อความใต้ช่องที่กรอกผิด (มาจาก Zod ของ Action)
+type Props = { messages?: string[] | undefined }
+const { messages } = Astro.props
+---
+
+{messages?.[0] && <p class="text-sm text-red-700">{messages[0]}</p>}

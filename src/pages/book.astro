@@ -1,0 +1,110 @@
+---
+// หน้าจองคิว: ฟอร์ม HTML ธรรมดาที่ส่งไปที่ Action booking.create (ไม่ต้องมี JavaScript)
+// Astro รัน Action ให้ก่อน แล้ว Render หน้านี้พร้อมผลลัพธ์ (Astro.getActionResult)
+//   สำเร็จ → แสดงใบยืนยันพร้อมรหัสจอง GU-XXXX
+//   ไม่สำเร็จ → แสดงข้อความจาก service เช่น "รอบนี้เต็มแล้ว" (409) และค่าที่กรอกไว้
+import { actions, isInputError } from "astro:actions"
+import StoreLayout from "../layouts/StoreLayout.astro"
+import BookingSummary from "../components/store/BookingSummary.astro"
+import FieldError from "../components/store/FieldError.astro"
+import { getDb } from "../server/db.ts"
+import { now } from "../server/clock.ts"
+import { getServices, getSlots } from "../server/services.ts"
+import { tomorrowOf, thaiDay } from "../lib/dates.ts"
+import { baht } from "../lib/labels.ts"
+
+const result = Astro.getActionResult(actions.booking.create)
+const booked = result && !result.error ? result.data : undefined
+const fields = isInputError(result?.error) ? result.error.fields : {}
+const problem = result?.error && !isInputError(result.error) ? result.error.message : undefined
+
+// ค่าที่ลูกค้ากรอกไว้ ส่งกลับไปในฟอร์มเมื่อจองไม่สำเร็จ จะได้ไม่ต้องพิมพ์ใหม่ทั้งหมด
+const typed = result?.error ? await Astro.request.formData().catch(() => undefined) : undefined
+const value = (name: string) => String(typed?.get(name) ?? "")
+
+const db = getDb()
+const date = tomorrowOf(now())
+const [services, day] = await Promise.all([getServices(db), getSlots(db, date)])
+const input = "w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
+---
+
+<StoreLayout title="จองคิว | Gear Up Auto Service">
+  {
+    booked ? (
+      <section class="mt-10 rounded-xl bg-white p-5" data-testid="confirmation">
+        <h1 class="text-xl font-bold">จองเรียบร้อยแล้ว</h1>
+        <p class="mt-2">จดรหัสจองนี้ไว้ ใช้คู่กับเบอร์โทรเพื่อดูหรือยกเลิกการจองที่หน้า "การจองของฉัน"</p>
+        <div class="mt-4">
+          <BookingSummary booking={booked} />
+        </div>
+        <p class="mt-4 flex flex-wrap gap-3">
+          <a class="rounded-lg bg-brand px-4 py-2 font-semibold text-white" href="/my-booking">การจองของฉัน</a>
+          <a class="rounded-lg border border-brand px-4 py-2 text-brand" href="/">กลับหน้าแรก</a>
+        </p>
+      </section>
+    ) : (
+      <section class="mt-10">
+        <h1 class="text-xl font-bold">ขอจองคิว {thaiDay(date)}</h1>
+        {problem && (
+          <p role="alert" class="mt-4 rounded-lg bg-red-50 px-4 py-3 font-semibold text-red-800">
+            {problem}
+          </p>
+        )}
+        <form method="POST" action={actions.booking.create} class="mt-4 grid gap-2 rounded-xl bg-white p-5">
+          <input type="hidden" name="date" value={date} />
+
+          <label for="customer">ชื่อ</label>
+          <input id="customer" name="customer" type="text" autocomplete="name" required class={input} value={value("customer")} />
+          <FieldError messages={fields.customer} />
+
+          <label for="phone">เบอร์โทร</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" required placeholder="081-234-1001" class={input} value={value("phone")} />
+          <FieldError messages={fields.phone} />
+
+          <label for="car">รุ่นรถ</label>
+          <input id="car" name="car" type="text" required placeholder="Toyota Yaris" class={input} value={value("car")} />
+          <FieldError messages={fields.car} />
+
+          <label for="plate">ทะเบียนรถ</label>
+          <input id="plate" name="plate" type="text" required placeholder="1กข-1234" class={input} value={value("plate")} />
+          <FieldError messages={fields.plate} />
+
+          <fieldset class="mt-1">
+            <legend>ขนาดรถ</legend>
+            <label class="mr-4 inline-flex items-center gap-2">
+              <input type="radio" name="carSize" value="small" checked={value("carSize") !== "big"} /> รถเล็ก (เก๋ง, แฮทช์แบ็ก)
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="radio" name="carSize" value="big" checked={value("carSize") === "big"} /> รถใหญ่ (กระบะ, SUV)
+            </label>
+          </fieldset>
+
+          <label for="service">บริการ</label>
+          <select id="service" name="service" required class={input}>
+            <option value="">เลือกบริการ</option>
+            {services.map((s) => (
+              <option value={s.id} selected={value("service") === s.id}>
+                {s.name} {baht(s.price)}{s.priceBig !== s.price ? ` (รถใหญ่ ${baht(s.priceBig)})` : ""}
+              </option>
+            ))}
+          </select>
+          <FieldError messages={fields.service} />
+
+          <label for="slot">รอบ</label>
+          {/* รอบที่เต็มยังเลือกได้: ตัวเลขบนหน้าอาจเก่าแล้ว คนที่ตัดสินจริงคือ service ตอนกดจอง */}
+          <select id="slot" name="slot" required class={input}>
+            <option value="">เลือกรอบ</option>
+            {day.slots.map((slot) => (
+              <option value={slot.time} selected={value("slot") === slot.time}>
+                {slot.time} · {slot.message}
+              </option>
+            ))}
+          </select>
+          <FieldError messages={fields.slot} />
+
+          <button type="submit" class="mt-2 rounded-lg bg-accent px-5 py-3 font-semibold text-white">ยืนยันการจอง</button>
+        </form>
+      </section>
+    )
+  }
+</StoreLayout>

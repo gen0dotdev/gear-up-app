@@ -1,0 +1,23 @@
+---
+// ช่องว่างของพรุ่งนี้ทีละรอบ: ตัวเลขมาจาก getSlots (นับเฉพาะ booked และ done)
+import type { SlotsOfDay } from "../../server/contract.ts"
+import { thaiDay } from "../../lib/dates.ts"
+
+type Props = { day: SlotsOfDay }
+const { day } = Astro.props
+---
+
+<section id="slots-section" class="mt-10">
+  <h2 class="text-xl font-bold">ช่องว่างของพรุ่งนี้ ({thaiDay(day.date)})</h2>
+  {day.slots.length === 0 && <p class="mt-2 text-gray-600">พรุ่งนี้ร้านไม่เปิดรอบให้จอง ทัก LINE @gearup ได้เลย</p>}
+  <ul class="mt-4 grid gap-4 md:grid-cols-2">
+    {
+      day.slots.map((slot) => (
+        <li class="flex items-center justify-between rounded-xl bg-white px-5 py-4">
+          <span class="font-semibold">รอบ {slot.time}</span>
+          <span class={slot.left === 0 ? "font-semibold text-red-700" : "text-gray-700"}>{slot.message}</span>
+        </li>
+      ))
+    }
+  </ul>
+</section>

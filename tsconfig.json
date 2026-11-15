@@ -1,0 +1,17 @@
+{
+  // strict ของ Astro = TypeScript strict ทั้งโปรเจกต์ (outcome ข้อ 5: Type safe end to end)
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "worker-configuration.d.ts", "**/*"],
+  "exclude": ["dist"],
+  "compilerOptions": {
+    // React Islands ของหลังร้าน (.tsx)
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    // shadcn/ui: @/ หมายถึง src/ (ไม่ใช้ baseUrl: TypeScript 7 ไม่รับแล้ว)
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+/* สไตล์ของทั้งแอป: Tailwind CSS v4 (ตั้งค่าในไฟล์ CSS ด้วย @theme ไม่มี tailwind.config.js)
+   หน้าร้านใช้สี brand / accent ชุดเดียวกับ landing page ของคอร์ส web-basics
+   หลังร้านใช้ตัวแปรของ shadcn/ui (primary, muted, ...) โดยตั้ง primary เป็นสี brand ของร้าน */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@theme {
+  --color-brand: #1e3a5f;
+  /* accent ของร้าน (ปุ่มส้ม) ชื่อซ้ำกับ accent ของ shadcn: เราใช้ของร้าน
+     คอมโพเนนต์ shadcn ที่ยกมา (button, badge, card) ไม่ได้ใช้ accent จึงไม่ชนกัน */
+  --color-accent: #c2410c;
+}
+
+@theme inline {
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --font-heading: var(--font-sans);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --primary: #1e3a5f;
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.95 0.01 250);
+  --secondary-foreground: #1e3a5f;
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.5 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+}

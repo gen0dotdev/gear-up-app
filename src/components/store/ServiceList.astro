@@ -1,0 +1,30 @@
+---
+// บริการและราคา พร้อมรูปจาก R2 (/photos/<id> ไม่มีรูปก็ได้รูปสำรอง)
+// ราคามาจาก service ทุกครั้งที่เปิดหน้า คุณภูมิแก้ราคาแล้วลูกค้าเห็นทันที
+import type { ServiceRow } from "../../server/contract.ts"
+import { baht } from "../../lib/labels.ts"
+
+type Props = { services: ServiceRow[] }
+const { services } = Astro.props
+---
+
+<section id="services-section" class="mt-10">
+  <h2 class="text-xl font-bold">บริการและราคา</h2>
+  <ul class="mt-4 grid gap-4 md:grid-cols-2">
+    {
+      services.map((s) => (
+        <li class="overflow-hidden rounded-xl bg-white">
+          <img src={`/photos/${s.id}`} alt={s.name} width="400" height="240" loading="lazy" class="aspect-[5/3] w-full object-cover" />
+          <div class="p-5">
+            <h3 class="font-semibold">{s.name}</h3>
+            <p>
+              {baht(s.price)}
+              {s.priceBig !== s.price && <span class="text-gray-600"> (รถใหญ่ {baht(s.priceBig)})</span>}
+            </p>
+            <p class="text-sm text-gray-600">ใช้เวลาประมาณ {s.minutes} นาที</p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</section>

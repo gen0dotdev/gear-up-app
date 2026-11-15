@@ -1,0 +1,26 @@
+---
+// หน้าแรก: landing page ของคอร์ส web-basics ที่ตอนนี้อ่านข้อมูลจริงจากเซิร์ฟเวอร์
+// (ราคาจาก getServices, ช่องว่างพรุ่งนี้จาก getSlots) ไม่มี JavaScript ฝั่ง Browser เลย
+import StoreLayout from "../layouts/StoreLayout.astro"
+import Hero from "../components/store/Hero.astro"
+import ServiceList from "../components/store/ServiceList.astro"
+import SlotList from "../components/store/SlotList.astro"
+import Team from "../components/store/Team.astro"
+import Contact from "../components/store/Contact.astro"
+import { getDb } from "../server/db.ts"
+import { now } from "../server/clock.ts"
+import { getServices, getSlots } from "../server/services.ts"
+import { tomorrowOf } from "../lib/dates.ts"
+
+const db = getDb()
+const [services, day] = await Promise.all([getServices(db), getSlots(db, tomorrowOf(now()))])
+---
+
+<StoreLayout title="Gear Up Auto Service | ศูนย์บริการรถยนต์ ถนนรามอินทรา">
+  <Hero slot="hero" />
+  <ServiceList services={services} />
+  <SlotList day={day} />
+  <p class="mt-4"><a class="inline-block rounded-lg bg-accent px-5 py-3 font-semibold text-white" href="/book">จองคิวพรุ่งนี้</a></p>
+  <Team />
+  <Contact />
+</StoreLayout>

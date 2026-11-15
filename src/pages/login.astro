@@ -1,0 +1,55 @@
+---
+// หน้าล็อกอินของพนักงาน (ไม่มีหน้าสมัคร: disableSignUp)
+// ฟอร์มส่งด้วย Better Auth Client (src/auth/client.ts) ซึ่งเรียก POST /api/auth/sign-in/email
+// สำเร็จแล้ว Better Auth ตั้ง Cookie ของ Session ให้ แล้วเราพาไปหน้าที่ขอไว้ (?next=)
+import "../styles/global.css"
+
+if (Astro.locals.user) return Astro.redirect("/admin")
+---
+
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>เข้าสู่ระบบ | Gear Up หลังร้าน</title>
+  </head>
+  <body class="grid min-h-screen place-items-center bg-gray-100 p-5 text-gray-800">
+    <form id="login" class="grid w-full max-w-sm gap-2 rounded-xl bg-white p-6">
+      <h1 class="text-xl font-bold">Gear Up หลังร้าน</h1>
+      <p class="text-sm text-gray-600">สำหรับพนักงานเท่านั้น</p>
+      <label for="email" class="mt-2">อีเมล</label>
+      <input id="email" name="email" type="email" autocomplete="username" required class="rounded-lg border border-gray-300 px-3 py-2" />
+      <label for="password">รหัสผ่าน</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required class="rounded-lg border border-gray-300 px-3 py-2" />
+      <p id="error" role="alert" class="text-sm text-red-700"></p>
+      <button type="submit" class="mt-2 rounded-lg bg-brand px-5 py-3 font-semibold text-white">เข้าสู่ระบบ</button>
+      <a href="/" class="text-center text-sm text-gray-600 underline">กลับหน้าร้าน</a>
+    </form>
+
+    <script>
+      import { authClient } from "../auth/client.ts"
+
+      const form = document.querySelector<HTMLFormElement>("#login")!
+      const error = document.querySelector<HTMLParagraphElement>("#error")!
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault()
+        const data = new FormData(form)
+        error.textContent = ""
+        const { error: failed } = await authClient.signIn.email({
+          email: String(data.get("email")),
+          password: String(data.get("password")),
+        })
+        if (failed) {
+          // ไม่บอกว่าอีเมลหรือรหัสผิด คนเดาจะได้ไม่รู้ว่าอีเมลไหนมีบัญชี
+          error.textContent = "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
+          return
+        }
+        // รับเฉพาะ path ในเว็บเรา (ขึ้นต้นด้วย / ตัวเดียว) กันลิงก์ ?next= พาไปเว็บอื่น
+        const next = new URLSearchParams(location.search).get("next") ?? ""
+        location.href = /^\/(?!\/)/.test(next) ? next : "/admin"
+      })
+    </script>
+  </body>
+</html>

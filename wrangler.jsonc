@@ -1,0 +1,31 @@
+// ตั้งค่า Cloudflare Workers ของ Gear Up
+// ไฟล์นี้บอกว่าแอปใช้ "ของ" อะไรบน Cloudflare บ้าง (Binding) โค้ดเรียกผ่าน env.ชื่อ
+// เช่น env.DB, env.BUCKET (import { env } from "cloudflare:workers")
+// ตอน astro dev ทุกอย่างจำลองในเครื่อง (โฟลเดอร์ .wrangler/state) ไม่ต้องมีบัญชี Cloudflare
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "gear-up-app",
+  // Entrypoint ของ Astro 7 ไม่ต้องชี้ไปที่ dist/ เอง (AI และบทความเก่ายังเขียน dist/_worker.js)
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-11-01",
+  // nodejs_compat: Better Auth และ services/booking-code.ts (stage 2) ใช้ node:crypto
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // ฐานข้อมูล D1 (SQLite): ตาราง Login ของ Better Auth ตอนนี้ และตารางของร้านใน stage 2
+  // database_id ใช้ตอน Deploy เท่านั้น ตอนนี้ยังไม่มีบัญชี จึงใส่ค่าชั่วคราวไว้
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gear-up",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // R2: เก็บรูปบริการ เช่น services/oil (คุณภูมิอัปโหลดจากหลังร้าน)
+  // ค่าที่ไม่ลับ (ค่าลับอยู่ใน .dev.vars และ wrangler secret) ว่างไว้ = ใช้ Origin ของคำขอ
+  "vars": { "BETTER_AUTH_URL": "" },
+
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "gear-up-photos" }]
+}

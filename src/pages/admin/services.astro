@@ -1,0 +1,66 @@
+---
+// บริการและราคา (คุณภูมิคนเดียว): แก้ราคา/เวลา และอัปโหลดรูปบริการขึ้น R2
+// ฟอร์ม HTML ธรรมดาสองแบบต่อบริการ ส่งไปที่ Action catalog.updateService และ catalog.uploadPhoto
+// middleware.ts กันคุณขวัญ (staff) ไว้ที่หน้านี้ และ Action ทั้งสองก็เช็ก requireAdmin เองอีกครั้ง
+import { actions } from "astro:actions"
+import AdminLayout from "../../layouts/AdminLayout.astro"
+import { getDb } from "../../server/db.ts"
+import { getServices } from "../../server/services.ts"
+import { ACCEPT } from "../../files/photos.ts"
+import { baht } from "../../lib/labels.ts"
+
+const saved = Astro.getActionResult(actions.catalog.updateService)
+const uploaded = Astro.getActionResult(actions.catalog.uploadPhoto)
+const last = uploaded ?? saved
+const message = !last ? undefined : last.error ? last.error.message : uploaded ? `อัปโหลดรูปของ ${uploaded.data?.id} แล้ว` : `บันทึกราคาของ ${saved?.data?.name} แล้ว`
+const services = await getServices(getDb())
+const input = "w-full rounded-md border border-input px-2 py-1"
+---
+
+<AdminLayout title="บริการและราคา">
+  <main class="mx-auto max-w-4xl space-y-4 p-4">
+    <h1 class="text-2xl font-bold">บริการและราคา</h1>
+    <p class="text-muted-foreground">ราคาใหม่มีผลกับการจองใหม่เท่านั้น การจองเดิมเก็บราคาตอนจองไว้แล้ว</p>
+    {message && <p role="status" class={last?.error ? "font-semibold text-destructive" : "font-semibold text-green-800"}>{message}</p>}
+
+    <ul class="grid gap-4 md:grid-cols-2">
+      {
+        services.map((s) => (
+          <li class="space-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10" data-service={s.id}>
+            <div class="flex items-start gap-3">
+              <img src={`/photos/${s.id}?t=${Date.now()}`} alt={s.name} width="120" height="72" class="aspect-[5/3] w-30 rounded-md object-cover" />
+              <div>
+                <h2 class="font-semibold">{s.name}</h2>
+                <p class="text-sm text-muted-foreground">
+                  {baht(s.price)} · รถใหญ่ {baht(s.priceBig)} · {s.minutes} นาที
+                </p>
+              </div>
+            </div>
+
+            <form method="POST" action={actions.catalog.updateService} class="grid grid-cols-3 gap-2 text-sm">
+              <input type="hidden" name="id" value={s.id} />
+              <label>
+                ราคา <input name="price" type="number" min="1" required value={s.price} class={input} />
+              </label>
+              <label>
+                รถใหญ่ <input name="priceBig" type="number" min="1" required value={s.priceBig} class={input} />
+              </label>
+              <label>
+                นาที <input name="minutes" type="number" min="1" required value={s.minutes} class={input} />
+              </label>
+              <button type="submit" class="col-span-3 rounded-md bg-primary px-3 py-2 text-primary-foreground">บันทึกราคา</button>
+            </form>
+
+            {/* enctype multipart/form-data: ฟอร์มที่มีไฟล์ต้องส่งแบบนี้ ไม่อย่างนั้น Browser ส่งแค่ชื่อไฟล์ */}
+            <form method="POST" action={actions.catalog.uploadPhoto} enctype="multipart/form-data" class="flex flex-wrap items-center gap-2 text-sm">
+              <input type="hidden" name="id" value={s.id} />
+              <input name="photo" type="file" accept={ACCEPT} required class="max-w-full" />
+              <button type="submit" class="rounded-md border border-border px-3 py-2">อัปโหลดรูป</button>
+            </form>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="text-sm text-muted-foreground">รูป JPG, PNG หรือ WebP ไม่เกิน 2 MB</p>
+  </main>
+</AdminLayout>

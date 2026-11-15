@@ -1,0 +1,40 @@
+---
+// โครงหน้าร้าน: หัวเว็บ (เมนู) เนื้อหา และท้ายเว็บ หน้าลูกค้าทุกหน้าใช้ร่วมกัน
+// สีและคลาสของ Tailwind ยกมาจาก landing page ของคอร์ส web-basics
+import "../styles/global.css"
+
+type Props = { title: string }
+const { title } = Astro.props
+---
+
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-gray-100 leading-relaxed text-gray-800">
+    <header class="bg-brand px-5 py-4 text-white">
+      <nav class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3">
+        <a href="/" class="font-bold text-orange-300">Gear Up Auto Service</a>
+        <ul class="flex flex-wrap gap-4">
+          <li><a href="/#services-section">บริการ</a></li>
+          <li><a href="/book">จองคิว</a></li>
+          <li><a href="/my-booking">การจองของฉัน</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <slot name="hero" />
+
+    <main class="mx-auto max-w-3xl px-5 pb-10">
+      <slot />
+    </main>
+
+    <footer class="px-5 py-6 text-center text-sm text-gray-600">
+      <p>Gear Up Auto Service ถนนรามอินทรา · จองหรือสอบถาม ทัก LINE @gearup</p>
+      <p class="mt-1"><a class="underline" href="/admin">สำหรับพนักงาน</a></p>
+    </footer>
+  </body>
+</html>

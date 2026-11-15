@@ -1,0 +1,24 @@
+---
+// สรุปการจองหนึ่งรายการ: ใช้ทั้งหน้ายืนยันหลังจอง และ "การจองของฉัน"
+import type { BookingView } from "../../server/contract.ts"
+import { baht, SERVICE_NAMES, STATUS_LABELS } from "../../lib/labels.ts"
+import { thaiDay } from "../../lib/dates.ts"
+
+type Props = { booking: BookingView }
+const { booking } = Astro.props
+---
+
+<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+  <dt class="text-gray-600">รหัสจอง</dt>
+  <dd class="font-mono text-lg font-bold tracking-wider" data-testid="booking-code">{booking.code}</dd>
+  <dt class="text-gray-600">วันและรอบ</dt>
+  <dd>{thaiDay(booking.date)} รอบ {booking.slot}</dd>
+  <dt class="text-gray-600">บริการ</dt>
+  <dd>{SERVICE_NAMES[booking.service]}</dd>
+  <dt class="text-gray-600">รถ</dt>
+  <dd>{booking.car} {booking.plate}</dd>
+  <dt class="text-gray-600">ราคา</dt>
+  <dd>{baht(booking.price)}</dd>
+  <dt class="text-gray-600">สถานะ</dt>
+  <dd data-testid="booking-status">{STATUS_LABELS[booking.status]}</dd>
+</dl>

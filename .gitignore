@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+# ข้อมูล D1 และ R2 ในเครื่อง (wrangler / astro dev สร้างให้)
+.wrangler/
+# ค่าลับ: มีแต่ .dev.vars.example ที่ขึ้น GitHub
+.dev.vars
+.env
+.DS_Store

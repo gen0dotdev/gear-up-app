@@ -1,0 +1,53 @@
+---
+// "การจองของฉัน": ลูกค้าไม่มีบัญชี จึงค้นด้วยรหัสจอง + เบอร์โทรที่กรอกตอนจอง แล้วยกเลิกได้
+// สองฟอร์ม สอง Action: booking.lookup (ค้น) และ booking.cancel (ยกเลิก)
+import { actions, isInputError } from "astro:actions"
+import StoreLayout from "../layouts/StoreLayout.astro"
+import BookingSummary from "../components/store/BookingSummary.astro"
+import FieldError from "../components/store/FieldError.astro"
+
+const lookup = Astro.getActionResult(actions.booking.lookup)
+const cancel = Astro.getActionResult(actions.booking.cancel)
+const last = cancel ?? lookup
+const booking = last && !last.error ? last.data : undefined
+const fields = isInputError(lookup?.error) ? lookup.error.fields : {}
+const problem = last?.error && !isInputError(last.error) ? last.error.message : undefined
+const typed = lookup?.error ? await Astro.request.formData().catch(() => undefined) : undefined
+const value = (name: string) => String(typed?.get(name) ?? "")
+const input = "w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
+---
+
+<StoreLayout title="การจองของฉัน | Gear Up Auto Service">
+  <section class="mt-10">
+    <h1 class="text-xl font-bold">การจองของฉัน</h1>
+    <p class="mt-2 text-gray-600">ใส่รหัสจอง (เช่น GU-7K2P) และเบอร์โทรที่ใช้ตอนจอง</p>
+
+    {problem && <p role="alert" class="mt-4 rounded-lg bg-red-50 px-4 py-3 font-semibold text-red-800">{problem}</p>}
+
+    <form method="POST" action={actions.booking.lookup} class="mt-4 grid gap-2 rounded-xl bg-white p-5">
+      <label for="code">รหัสจอง</label>
+      <input id="code" name="code" type="text" required autocapitalize="characters" class={input} value={value("code")} />
+      <FieldError messages={fields.code} />
+      <label for="phone">เบอร์โทร</label>
+      <input id="phone" name="phone" type="tel" required class={input} value={value("phone")} />
+      <FieldError messages={fields.phone} />
+      <button type="submit" class="mt-2 rounded-lg bg-brand px-5 py-3 font-semibold text-white">ดูการจอง</button>
+    </form>
+
+    {
+      booking && (
+        <div class="mt-6 rounded-xl bg-white p-5" data-testid="my-booking">
+          {cancel && !cancel.error && <p class="mb-3 font-semibold text-green-800">ยกเลิกแล้ว ช่องนี้คืนให้ร้านเรียบร้อย</p>}
+          <BookingSummary booking={booking} />
+          {booking.status === "booked" && (
+            <form method="POST" action={actions.booking.cancel} class="mt-4">
+              <input type="hidden" name="code" value={booking.code} />
+              <input type="hidden" name="phone" value={booking.phone} />
+              <button type="submit" class="rounded-lg border border-red-700 px-4 py-2 font-semibold text-red-700">ยกเลิกการจองนี้</button>
+            </form>
+          )}
+        </div>
+      )
+    }
+  </section>
+</StoreLayout>

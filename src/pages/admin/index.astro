@@ -1,0 +1,16 @@
+---
+// กระดานงานของคุณขวัญ: React Island จากคอร์ส react-basics (src/components/admin/)
+// หน้านี้แค่บอกวันที่ (วันนี้ / พรุ่งนี้ ตามนาฬิกาของเซิร์ฟเวอร์) ข้อมูลทั้งหมดมาจาก Action board.*
+// middleware.ts กันคนที่ไม่ใช่พนักงานไว้แล้ว
+import AdminLayout from "../../layouts/AdminLayout.astro"
+import AdminBoard from "../../components/admin/AdminBoard.tsx"
+import { now } from "../../server/clock.ts"
+import { dayOf, tomorrowOf } from "../../lib/dates.ts"
+
+const at = now()
+---
+
+<AdminLayout title="กระดานงาน">
+  {/* client:load = ส่ง JavaScript ของคอมโพเนนต์นี้ไปที่ Browser และเริ่มทำงานทันทีที่หน้าโหลด */}
+  <AdminBoard client:load today={dayOf(at)} tomorrow={tomorrowOf(at)} />
+</AdminLayout>
